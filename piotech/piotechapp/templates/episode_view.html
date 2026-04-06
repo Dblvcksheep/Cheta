@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ episode.title }} | {{ course.title }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-5 min-vh-100 bg-light">
+
+  <!-- Header -->
+  <div class="text-center mb-4">
+    <h1 class="fw-bold text-dark">{{ course.title }}</h1>
+    <h4 class="text-muted">{{ episode.title }}</h4>
+  </div>
+
+  <!-- Episode Navigation and Media -->
+  <div class="position-relative d-flex justify-content-center align-items-center mb-4">
+
+    {% if prev_episode %}
+      <a href="{% url 'episode_view' course.id prev_episode.id %}"
+         class="btn btn-dark btn-lg position-absolute start-0 top-50 translate-middle-y px-3 py-2 rounded-circle shadow"
+         aria-label="Previous episode">
+         &lt;
+      </a>
+    {% endif %}
+
+    <!-- VIDEO or TEXT EPISODE -->
+    {% if episode.video %}
+      <div class="video-container shadow-lg rounded-4 overflow-hidden" style="max-width: 1000px; width: 100%;">
+        <video id="lessonVideo"
+               controls
+               disablePictureInPicture
+               controlsList="nodownload noremoteplayback"
+               class="w-100"
+               style="aspect-ratio: 16/9; background-color: #000;">
+          <source src="{{ episode.video.url }}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    {% else %}
+    <div class="text-lesson-container bg-white border rounded-4 shadow-sm p-4 mx-auto w-100 text-break"
+         style="max-width: 900px;">
+        <p class="lead mb-0 text-secondary">
+            {{ episode.description|linebreaksbr }}
+        </p>
+    </div>
+    {% endif %}
+
+    {% if next_episode %}
+      <a href="{% url 'episode_view' course.id next_episode.id %}"
+         class="btn btn-dark btn-lg position-absolute end-0 top-50 translate-middle-y px-3 py-2 rounded-circle shadow"
+         aria-label="Next episode">
+         &gt;
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Description (only if there's a video) -->
+  {% if episode.video %}
+    <div class="mx-auto" style="max-width: 900px;">
+      <p class="lead text-dark">{{ episode.description|linebreaksbr }}</p>
+
+
+    </div>
+  {% endif %}
+      {% if course.creator != user %}
+      <div class="text-center mt-3">
+        <button id="toggleComplete" class="btn btn-outline-dark px-5 py-2 shadow-sm">
+          {% if progress.completed %}✓ Completed{% else %}Mark as Complete{% endif %}
+        </button>
+      </div>
+    {% endif %}
+
+  <!-- Footer Buttons -->
+  <div class="text-center mt-5">
+    <a href="{% url 'course_detail' course.id %}"
+       class="btn btn-outline-dark btn-lg px-5 py-2 shadow-sm">
+      &larr; Back to Course
+    </a>
+
+    {% if last_episode and not completed_course and course.creator != user %}
+      <a href="{% url 'quiz_view' course.id %}"
+         class="btn btn-outline-dark btn-lg px-5 py-2 shadow-sm ms-3">
+        Finish
+      </a>
+    {% endif %}
+  </div>
+  <div class="comments-section my-4">
+    <h5>Ask a Question</h5>
+    <form method="POST" action="{% url 'add_comment' course.id episode.id %}">
+        {% csrf_token %}
+        <textarea name="comment" class="form-control mb-2" rows="3" placeholder="Write your comment here..."></textarea>
+        <button type="submit" class="btn btn-dark btn-sm">Comment</button>
+    </form>
+  </div>
+
+  <!-- Comments List -->
+  <div class="comment-list mt-4">
+      {% for comment in comments %}
+          <div class="comment mb-3 p-2 border rounded">
+              <div class="d-flex align-items-start">
+                  <!-- User Profile Image -->
+                  {% if comment.user.profile.image %}
+                  <img src="{{ comment.user.profile.image.url }}" alt="{{ comment.user.username }}" class="rounded-circle me-2" width="40" height="40">
+                  {% else %}
+                  <img src="{% static 'images/default-avatar.png' %}" alt="{{ comment.user.username }}" class="rounded-circle me-2" width="40" height="40">
+                  {% endif %}
+                  <div class="flex-grow-1">
+                      <!-- Username and Comment -->
+                      <strong>{{ comment.user.username }}</strong>
+                      <p class="mb-1">{{ comment.comment }}</p>
+
+                      <!-- Reply Symbol -->
+                      <a href="javascript:void(0);" class="reply-toggle text-primary small">Reply</a>
+
+                      <!-- Reply Form (hidden by default) -->
+                      <form method="POST" action="{% url 'add_reply' comment.id %}" class="reply-form mt-2" style="display: none;">
+                          {% csrf_token %}
+                          <textarea name="reply" class="form-control mb-1" rows="2" placeholder="Write your reply..."></textarea>
+                          <button type="submit" class="btn btn-sm btn-outline-dark">Reply</button>
+                      </form>
+
+                      <!-- Replies -->
+                      <div class="replies ms-4 mt-2">
+                          {% for reply in comment.replies.all %}
+                              <div class="reply mb-2">
+                                  <div class="d-flex align-items-start">
+                                      {% if reply.user.profile.image %}
+                                      <img src="{{ reply.user.profile.image.url }}" alt="{{ reply.user.username }}" class="rounded-circle me-2" width="30" height="30">
+                                      {% else %}
+                                      <img src="{% static 'images/default-avatar.png' %}" alt="{{ reply.user.username }}" class="rounded-circle me-2" width="30" height="30">
+                                      {% endif %}
+                                      <div>
+                                          <strong>{{ reply.user.username }}</strong>
+                                          <p class="mb-0">{{ reply.reply }}</p>
+                                      </div>
+                                  </div>
+                              </div>
+                          {% endfor %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+      {% empty %}
+          <p class="text-muted">No questions yet. Be the first to Ask!</p>
+      {% endfor %}
+  </div>
+
+</div>
+
+<script>
+const csrftoken = "{{ csrf_token }}";
+const courseId = "{{ course.id }}";
+const episodeId = "{{ episode.id }}";
+const video = document.getElementById("lessonVideo");
+const completeBtn = document.getElementById("toggleComplete");
+
+let resumeTime = {{ progress.last_position|default:0 }};
+let saveInterval;
+
+// --- VIDEO HANDLING ---
+if (video) {
+  video.addEventListener("loadedmetadata", () => {
+    if (resumeTime > 0 && resumeTime < video.duration) {
+      video.currentTime = resumeTime;
+    }
+  });
+
+  video.addEventListener("contextmenu", e => e.preventDefault());
+  video.setAttribute("controlsList", "nodownload noremoteplayback");
+
+  // Save progress every 5 seconds
+  saveInterval = setInterval(() => {
+    if (!video.paused && !video.ended && video.duration > 0) {
+      const current = video.currentTime;
+      const percent = (current / video.duration) * 100;
+      fetch(`/courses/${courseId}/episode/${episodeId}/save/`, {
+        method: "POST",
+        headers: {"X-CSRFToken": csrftoken, "Content-Type": "application/json"},
+        body: JSON.stringify({
+          last_position: current,
+          progress: percent,
+          completed: percent >= 99
+        }),
+      });
+    }
+  }, 5000);
+
+  video.addEventListener("ended", () => {
+    clearInterval(saveInterval);
+    fetch(`/courses/${courseId}/episode/${episodeId}/save/`, {
+      method: "POST",
+      headers: {"X-CSRFToken": csrftoken, "Content-Type": "application/json"},
+      body: JSON.stringify({progress: 100, completed: true})
+    });
+  });
+}
+
+// --- TEXT LESSON HANDLING ---
+if (!video) {
+  // Auto mark text-only episodes as completed after 1 minute
+  setTimeout(() => {
+    fetch(`/courses/${courseId}/episode/${episodeId}/save/`, {
+      method: "POST",
+      headers: {"X-CSRFToken": csrftoken, "Content-Type": "application/json"},
+      body: JSON.stringify({progress: 100, completed: true})
+    });
+  }, 60000);
+}
+
+// --- TOGGLE COMPLETION BUTTON ---
+completeBtn?.addEventListener("click", () => {
+  fetch(`/courses/${courseId}/episode/${episodeId}/toggle_complete/`)
+    .then(res => res.json())
+    .then(data => {
+      completeBtn.textContent = data.completed ? "✓ Completed" : "Mark as Complete";
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const toggles = document.querySelectorAll(".reply-toggle");
+    toggles.forEach(toggle => {
+        toggle.addEventListener("click", () => {
+            const form = toggle.nextElementSibling;
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        });
+    });
+});
+</script>
+{% endblock %}

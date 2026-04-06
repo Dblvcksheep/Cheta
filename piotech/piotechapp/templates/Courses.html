@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Courses | Cheta{% endblock %}
+{% block content %}
+
+<div class="bg-light py-5 border-bottom">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <h1 class="display-5 fw-bold text-dark">Explore Courses</h1>
+        <p class="text-muted mb-0">Learn from experts. Build your path. Empower your future.</p>
+      </div>
+      <a href="{% url 'add_course' %}" class="btn btn-dark px-4 mt-3 mt-md-0 rounded-pill shadow-sm">
+        <i class="bi bi-plus-circle me-2"></i> Create Course
+      </a>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <form method="post" class="mt-4" action="{% url 'search' %}">
+      {% csrf_token %}
+      <div class="row g-2 align-items-center">
+        <div class="col-md-8">
+          <div class="input-group shadow-sm">
+            <input type="text" class="form-control form-control-lg" name="search" placeholder="Search for courses, topics, or instructors..." aria-label="Search">
+            <button class="btn btn-dark px-4" type="submit">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select form-select-lg shadow-sm" name="category" onchange="this.form.submit()">
+            <option value="">All Categories</option>
+            <option value="EG">Engineering</option>
+            <option value="BC">Blockchain</option>
+            <option value="FD">Finance & Defi</option>
+            <option value="WD">Web Development</option>
+            <option value="DS">Data Science & AI</option>
+            <option value="UI">UI/UX Design</option>
+            <option value="CY">Cybersecurity</option>
+            <option value="OT">Other</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Course Cards Grid -->
+<div class="container py-5">
+  {% if courses %}
+    <div class="row g-4">
+      {% for course in courses %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+          <a href="{% url 'course_detail' course.id %}" class="text-decoration-none text-dark">
+            <div class="card course-card border-0 shadow-sm h-100">
+              <div class="position-relative overflow-hidden rounded-top">
+                <img src="{{ course.cover_image.url }}"
+                     alt="{{ course.title }}"
+                     class="img-fluid w-100"
+                     style="aspect-ratio: 16/9; object-fit: cover;">
+                <div class="overlay d-flex align-items-center justify-content-center">
+                  <span class="btn btn-light btn-sm rounded-pill px-3">View Details</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="fw-bold mb-1">{{ course.title|truncatechars:40 }}</h5>
+                <p class="text-muted small mb-2">{{ course.creator.username|default:"Instructor" }}</p>
+                <div class="d-flex align-items-center justify-content-between">
+<!--                  <div class="text-warning small">-->
+<!--                    ★★★★☆ <span class="text-muted">(4.8)</span>-->
+<!--                  </div>-->
+                  <span class="badge bg-dark text-white rounded-pill px-3 py-2">Free</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+      <nav class="mt-5" aria-label="Course pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link text-dark" href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link text-muted">&lt;</span>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link {% if page_obj.number == num %}bg-dark text-white border-dark{% else %}text-dark{% endif %}"
+                 href="?page={{ num }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link text-dark" href="?page={{ page_obj.next_page_number }}">&gt;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link text-muted">&gt;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="text-center py-5">
+<!--      <img src="{% static 'images/empty_state.svg' %}" alt="No courses" style="max-width: 300px;">-->
+      <h5 class="text-muted mt-3">No courses available yet.</h5>
+      <p class="text-secondary">Be the first to create one and inspire others.</p>
+      <a href="{% url 'add_course' %}" class="btn btn-dark px-4 mt-2 rounded-pill">Create Course</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Styling -->
+<style>
+  .course-card {
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+  .course-card .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .course-card:hover .overlay {
+    opacity: 1;
+  }
+  .form-select, .form-control {
+    border-radius: 2rem;
+  }
+  .pagination .page-link {
+    border: none;
+    font-weight: 500;
+  }
+  .pagination .active .page-link {
+    border-radius: 50%;
+  }
+</style>
+
+{% endblock %}

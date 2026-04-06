@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 bg-light-subtle py-5">
+
+  <!-- Hero Section -->
+  <section class="container text-center mb-5">
+    <h1 class="display-4 fw-bold mb-4 text-dark">About Cheta</h1>
+    <div class="col-lg-8 mx-auto">
+      <p class="lead text-secondary">
+        Cheta is a cutting-edge decentralized educational tool, combining the power of
+        <strong>Artificial Intelligence (AI)</strong> and <strong>Blockchain</strong> to redefine global learning.
+        Our mission is to make education <em>affordable, personalized, and verifiable</em> for everyone.
+      </p>
+    </div>
+
+    <div class="mt-5">
+      <img src="{% static 'images/chetahome.jpg' %}"
+           alt="Edu-Pi Educational Platform"
+           class="img-fluid rounded-4 shadow-lg w-100 w-md-75 mx-auto"
+           style="max-height: 400px; object-fit: cover;">
+    </div>
+  </section>
+
+  <!-- Mission Section -->
+  <section class="container text-center my-5 py-5 border-top border-bottom">
+    <h2 class="display-6 fw-bold mb-3 text-dark">Our Mission</h2>
+    <div class="col-lg-8 mx-auto">
+      <p class="lead text-secondary">
+        To democratize education through a subscription-based ecosystem that leverages AI for adaptive learning
+        and blockchain for verifiable credentials.
+        We aim to build a global learning community where knowledge knows no boundaries —
+        <strong>secure, personalized, and accessible to all.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- Vision Section -->
+  <section class="container text-center my-5 py-5">
+    <h2 class="display-6 fw-bold mb-3 text-dark">Our Vision</h2>
+    <div class="col-lg-8 mx-auto">
+      <p class="lead text-secondary">
+        We envision a world where education is <strong>borderless and lifelong</strong> — powered by decentralized
+        systems and intelligent learning models.
+        Cheta strives to make education a continuous, affordable experience through a
+        <em>“Spotify-for-learning”</em> model that connects learners, educators, and innovators worldwide.
+      </p>
+    </div>
+  </section>
+
+  <!-- Objectives Section -->
+  <section class="container my-5">
+    <h2 class="display-6 fw-bold text-center text-dark mb-4 pb-2 border-bottom">Our Objectives</h2>
+    <div class="row g-4 mt-4">
+
+      <!-- Objective Item -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift p-3">
+          <div class="card-body text-center">
+            <i class="bi bi-person-gear fs-2 text-primary mb-3"></i>
+            <h5 class="fw-bold mb-2">Personalized Learning</h5>
+            <p class="text-muted small">
+              Use AI to adapt learning paths and provide real-time feedback tailored to each learner’s goals and pace.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objective Item -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+          <div class="card-body text-center">
+            <i class="bi bi-shield-lock fs-2 text-success mb-3"></i>
+            <h5 class="fw-bold mb-2">Security & Trust</h5>
+            <p class="text-muted small">
+              Utilize blockchain for tamper-proof credentials, secure data, and transparent academic records.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objective Item -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+          <div class="card-body text-center">
+            <i class="bi bi-globe2 fs-2 text-info mb-3"></i>
+            <h5 class="fw-bold mb-2">Global Access</h5>
+            <p class="text-muted small">
+              Connect learners and educators globally through a low-cost subscription model without geographic limits.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objective Item -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+          <div class="card-body text-center">
+            <i class="bi bi-book fs-2 text-warning mb-3"></i>
+            <h5 class="fw-bold mb-2">Lifelong Learning</h5>
+            <p class="text-muted small">
+              Empower continuous skill development with flexible access to micro-courses and professional credentials.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objective Item -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+          <div class="card-body text-center">
+            <i class="bi bi-person-video3 fs-2 text-danger mb-3"></i>
+            <h5 class="fw-bold mb-2">Empower Educators</h5>
+            <p class="text-muted small">
+              Give instructors AI tools and blockchain-backed systems to verify contributions and earn fair rewards.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objective Item -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+          <div class="card-body text-center">
+            <i class="bi bi-award fs-2 text-secondary mb-3"></i>
+            <h5 class="fw-bold mb-2">Credential Innovation</h5>
+            <p class="text-muted small">
+              Establish a universal framework for decentralized, verifiable certificates accessible worldwide.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<!-- Custom Styles -->
+<style>
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  @media (max-width: 768px) {
+    .display-4 {
+      font-size: 2rem;
+    }
+    .display-6 {
+      font-size: 1.5rem;
+    }
+    .card-body p {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+{% endblock %}

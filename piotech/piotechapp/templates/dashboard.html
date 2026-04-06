@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container py-5 min-vh-100">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap mb-5">
+    <div class="d-flex align-items-center gap-3">
+      <div>
+        {% if user.profile.image %}
+          <img src="{{ user.profile.image.url }}" alt="Profile Picture"
+               id="profilePreview"
+               class="rounded-circle shadow-sm border"
+               style="width: 90px; height: 90px; object-fit: cover; cursor: pointer;"
+               data-bs-toggle="modal" data-bs-target="#editProfileImageModal">
+        {% else %}
+          <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar"
+               id="profilePreview"
+               class="rounded-circle shadow-sm border"
+               style="width: 90px; height: 90px; object-fit: cover; cursor: pointer;"
+               data-bs-toggle="modal" data-bs-target="#editProfileImageModal">
+        {% endif %}
+      </div>
+      <div>
+        <h2 class="fw-bold mb-1 text-body-emphasis">Welcome back, {{ user.username }} 👋</h2>
+        <p class="text-muted mb-0 small">Continue your journey. Create, Learn and Web3!!.</p>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <a href="{% url 'edit_profile' %}" class="btn btn-outline-dark px-4">Edit Profile</a>
+      <a href="{% url 'user_course' %}" class="btn btn-dark px-4">Manage Courses</a>
+    </div>
+  </div>
+
+  <!-- Profile Image Modal -->
+  <div class="modal fade" id="editProfileImageModal" tabindex="-1" aria-labelledby="editProfileImageLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'update_profile_image' %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProfileImageLabel">Update Profile Image</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img id="modalProfilePreview"
+                 src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
+                 class="rounded-circle mb-3"
+                 style="width: 120px; height: 120px; object-fit: cover;">
+            <input type="file" name="image" id="profileImageInput" class="form-control mt-2" accept="image/*">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-dark px-4">Save Changes</button>
+            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements -->
+  <h4 class="fw-bold text-body-emphasis mb-4 border-bottom pb-2">My Achievements</h4>
+  {% if not started_courses and not courses %}
+    <p class="text-muted fst-italic text-center mt-4">You have no achievements yet — start a course today!</p>
+  {% else %}
+    <div class="d-flex flex-wrap gap-4">
+      {% if courses %}
+        <div class="text-center">
+          <img src="{% static 'images/default-avatar.png' %}" alt="Creator Badge"
+               class="rounded-circle border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+          <p class="small mt-2">Creator</p>
+        </div>
+      {% endif %}
+      {% if started_course.exists %}
+        <div class="text-center">
+          <img src="{% static 'images/starting.jpg' %}" alt="Starter Badge"
+               class="rounded-circle border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+          <p class="small mt-2">Pioneer</p>
+        </div>
+      {% endif %}
+      {% for completed in completed_course %}
+        <a class="text-decoration-none" href="{% url 'download_certificate_image' completed.id %}"><div class="text-center">
+          <img src="{{ completed.certificate_image.url }}" alt="Completed Badge"
+               class="rounded-circle border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+          <p class="small mt-2 text-truncate text-dark" style="width: 80px;" title="{{ completed.course.title }}">Completed {{ completed.course.title }}</p>
+        </div></a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- My Library -->
+  <h4 class="fw-bold text-body-emphasis mt-5 mb-4 border-bottom pb-2">My Library</h4>
+  {% if ongoing_course %}
+    <div class="row g-4">
+      {% for course in ongoing_course %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <a href="{% url 'course_detail' course.id %}" class="text-decoration-none text-dark">
+            <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden course-card">
+              <div class="ratio ratio-16x9">
+                <img src="{{ course.course.cover_image.url }}"
+                     class="card-img-top"
+                     alt="{{ course.course.title }}"
+                     style="object-fit: cover;">
+              </div>
+              <div class="card-body">
+                <h6 class="fw-semibold text-truncate mb-1">{{ course.course.title }}</h6>
+                <p class="text-muted small mb-2">{{ course.course.category|default:"General" }}</p>
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="badge bg-dark-subtle text-dark fw-semibold">Active</span>
+                  <i class="bi bi-play-circle-fill text-dark"></i>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted fst-italic text-center mt-4">You don’t have any courses yet — browse and start learning!</p>
+  {% endif %}
+</div>
+
+<!-- Styles -->
+<style>
+  .course-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    background-color: #fff;
+  }
+  .course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  .badge.bg-dark-subtle {
+    background-color: #eaeaea !important;
+  }
+  @media (max-width: 576px) {
+    h2 { font-size: 1.3rem; }
+    .card-body h6 { font-size: 0.9rem; }
+  }
+</style>
+
+<!-- Scripts -->
+<script>
+  const profileInput = document.getElementById('profileImageInput');
+  const modalPreview = document.getElementById('modalProfilePreview');
+  const headerPreview = document.getElementById('profilePreview');
+
+  profileInput?.addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const fileUrl = URL.createObjectURL(file);
+      modalPreview.src = fileUrl;
+      headerPreview.src = fileUrl; // update header immediately
+    }
+  });
+</script>
+
+{% endblock %}

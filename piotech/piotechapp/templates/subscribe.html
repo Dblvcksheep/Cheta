@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscribe{% endblock %}
+
+{% block content %}
+
+<div class="container min-vh-100 mt-4">
+    <h2>Hi {{ user.username }}</h2>
+    <p>
+        To enjoy all platform features, there is a small subscription fee.
+        You can subscribe monthly or yearly. Built on Base Network.
+    </p>
+
+    {% if not user.subscribe.is_active %}
+        <a href="{% url 'get_subscribed' 'M' %}">
+            <button class="btn btn-primary">$10 USDC / Monthly</button>
+        </a>
+
+        <a href="{% url 'get_subscribed' 'Y' %}">
+            <button class="btn btn-success">$100 USDC / Yearly</button>
+        </a>
+
+    {% else %}
+        <p class="alert alert-info mt-3">
+            You already have an active plan.
+            <br>Expires: <strong>{{ user.subscribe.expires_at }}</strong>
+        </p>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block Ai %}{% endblock %}

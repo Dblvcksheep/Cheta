@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ course.title }}{% endblock %}
+{% block content %}
+<div class="container py-5 min-vh-100">
+
+  {% if course %}
+  <!-- === Course Hero Section === -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    {% if course.cover_image %}
+      <div class="ratio ratio-21x9 bg-light">
+        <img src="{{ course.cover_image.url }}" alt="{{ course.title }}" class="object-fit-cover w-100 h-100">
+      </div>
+    {% endif %}
+    <div class="card-body p-5">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div>
+          <h1 class="fw-bold text-dark mb-3">{{ course.title }}</h1>
+          <p class="lead text-muted mb-3">{{ course.description|linebreaksbr }}</p>
+          <p class="text-secondary mb-0">
+            <i class="bi bi-person-circle me-2"></i>
+            <span class="fw-semibold text-dark">{{ course.creator }}</span>
+          </p>
+        </div>
+        <div class="mt-4 mt-md-0">
+          {% if course.creator == user %}
+            <a href="{% url 'edit_course' course.id %}" class="btn btn-outline-dark me-2">
+              <i class="bi bi-pencil-square me-1"></i> Edit Course
+            </a>
+          {% endif %}
+          {% if course.creator != user and not started_course and course.episodes.all|length > 0 %}
+              <form method="POST" action="{% url 'start_course' course.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-dark">
+                      <i class="bi bi-play-fill me-1"></i>
+                      <span id="btnText">Start Course</span>
+                  </button>
+              </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === Course Outline Section === -->
+  {% if course.episodes.all %}
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+      <h3 class="fw-bold mb-4 text-dark d-flex align-items-center">
+        <i class="bi bi-list-task me-2 text-dark"></i> Course Outline
+      </h3>
+
+      <div class="list-group list-group-flush">
+        {% for i in episodes %}
+          <div class="list-group-item border-0 border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-start flex-column">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-play-circle-fill text-dark me-2 fs-5"></i>
+                <span class="fw-semibold fs-6">{{ i.title }}</span>
+              </div>
+
+              {% if course.creator != user %}
+                {% with i.user_progress.0 as ep_prog %}
+                <div class="progress mt-2" style="height: 6px; width: 200px;">
+                  <div class="progress-bar bg-dark"
+                       role="progressbar"
+                       style="width: {{ ep_prog.progress|default:0 }}%;"
+                       aria-valuenow="{{ ep_prog.progress|default:0 }}"
+                       aria-valuemin="0"
+                       aria-valuemax="100">
+                  </div>
+                </div>
+                <small class="text-muted">{{ ep_prog.progress|floatformat:0|default:0 }}% completed</small>
+            </div>
+
+            <div class="text-end">
+              {% if started_course or course.creator == user %}
+                {% if ep_prog.progress >= 100 and course.creator != user %}
+                <a href="{% url 'rewatch' course.id i.id %}" class="btn btn-sm btn-outline-dark px-3">
+                  <i class="bi bi-play-fill me-1"></i> Rewatch
+                </a>
+                {% else %}
+                <a href="{% url 'episode_view' course.id i.id %}" class="btn btn-sm btn-outline-dark px-3">
+                  <i class="bi bi-play-fill me-1"></i> Watch
+                </a>
+                {% endif %}
+              {% else %}
+                <span class="badge bg-light text-secondary border">Locked</span>
+              {% endif %}
+            </div>
+              {% endwith %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- === Footer Actions === -->
+  <div class="text-center mt-5">
+    <a href="{% url 'courses' %}" class="btn btn-outline-secondary px-4">
+      <i class="bi bi-arrow-left-circle me-2"></i> Back to Courses
+    </a>
+  </div>
+
+  {% endif %}
+  <div class="comments-section my-4">
+    <h5>Leave a Comment</h5>
+    <form method="POST" action="{% url 'add_comment' course.id 0 %}">
+        {% csrf_token %}
+        <textarea name="comment" class="form-control mb-2" rows="3" placeholder="Write your comment here..."></textarea>
+        <button type="submit" class="btn btn-dark btn-sm">Comment</button>
+    </form>
+  </div>
+
+  <!-- Comments List -->
+  <div class="comment-list mt-4">
+      {% for comment in comments %}
+          <div class="comment mb-3 p-2 border rounded">
+              <div class="d-flex align-items-start">
+                  <!-- User Profile Image -->
+                  {% if comment.user.profile.image %}
+                  <img src="{{ comment.user.profile.image.url }}" alt="{{ comment.user.username }}" class="rounded-circle me-2" width="40" height="40">
+                  {% else %}
+                  <img src="{% static 'images/default-avatar.png' %}" alt="{{ comment.user.username }}" class="rounded-circle me-2" width="40" height="40">
+                  {% endif %}
+                  <div class="flex-grow-1">
+                      <!-- Username and Comment -->
+                      <strong>{{ comment.user.username }}</strong>
+                      <p class="mb-1">{{ comment.comment }}</p>
+
+                      <!-- Reply Symbol -->
+                      <a href="javascript:void(0);" class="reply-toggle text-primary small">Reply</a>
+
+                      <!-- Reply Form (hidden by default) -->
+                      <form method="POST" action="{% url 'add_reply' comment.id %}" class="reply-form mt-2" style="display: none;">
+                          {% csrf_token %}
+                          <textarea name="reply" class="form-control mb-1" rows="2" placeholder="Write your reply..."></textarea>
+                          <button type="submit" class="btn btn-sm btn-outline-dark">Reply</button>
+                      </form>
+
+                      <!-- Replies -->
+                      <div class="replies ms-4 mt-2">
+                          {% for reply in comment.replies.all %}
+                              <div class="reply mb-2">
+                                  <div class="d-flex align-items-start">
+                                      {% if reply.user.profile.image %}
+                                      <img src="{{ reply.user.profile.image.url }}" alt="{{ reply.user.username }}" class="rounded-circle me-2" width="30" height="30">
+                                      {% else %}
+                                      <img src="{% static 'images/default-avatar.png' %}" alt="{{ reply.user.username }}" class="rounded-circle me-2" width="30" height="30">
+                                      {% endif %}
+                                      <div>
+                                          <strong>{{ reply.user.username }}</strong>
+                                          <p class="mb-0">{{ reply.reply }}</p>
+                                      </div>
+                                  </div>
+                              </div>
+                          {% endfor %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+      {% empty %}
+          <p class="text-muted">No comments yet. Be the first to comment!</p>
+      {% endfor %}
+  </div>
+
+</div>
+
+
+<!-- === Styles === -->
+<style>
+  .object-fit-cover { object-fit: cover; }
+  .ratio-21x9 {
+    aspect-ratio: 21 / 9;
+  }
+  .list-group-item {
+    transition: background-color 0.25s ease, transform 0.2s ease;
+  }
+  .list-group-item:hover {
+    background-color: #f9fafb;
+    transform: translateY(-2px);
+  }
+  .progress {
+    background-color: #e9ecef;
+  }
+  .progress-bar {
+    transition: width 0.6s ease;
+  }
+  .btn-dark, .btn-outline-dark {
+    border-radius: 10px;
+  }
+  @media (max-width: 768px) {
+    .card-body h1 { font-size: 1.8rem; }
+  }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const toggles = document.querySelectorAll(".reply-toggle");
+    toggles.forEach(toggle => {
+        toggle.addEventListener("click", () => {
+            const form = toggle.nextElementSibling;
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Proposal | DAO{% endblock %}
+{% block content %}
+
+<div class="container py-5 min-vh-100">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-dark text-white text-center py-4">
+          <h2 class="fw-bold mb-0">
+            <i class="bi bi-lightbulb-fill text-warning me-2"></i> New DAO Proposal
+          </h2>
+          <p class="mb-0 text-secondary">Shape the direction of our ecosystem through community governance</p>
+        </div>
+
+        <!-- Form -->
+        <div class="card-body p-4 p-md-5">
+          <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-4">
+              <label for="title" class="form-label fw-semibold">Proposal Title</label>
+              <input
+                type="text"
+                class="form-control form-control-lg rounded-3 border-dark-subtle"
+                id="title"
+                name="title"
+                placeholder="e.g., Integrate AI mentorship into PioTech courses"
+                required>
+              <div class="form-text text-muted">Keep it concise and descriptive.</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="description" class="form-label fw-semibold">Detailed Description</label>
+              <textarea
+                class="form-control form-control-lg rounded-3 border-dark-subtle"
+                id="description"
+                name="description"
+                rows="6"
+                placeholder="Provide details about your proposal, its benefits, and expected outcomes..."
+                required></textarea>
+              <div class="form-text text-muted">Be clear about your goals and rationale for the proposal.</div>
+            </div>
+
+            <!-- Optional Proposal Metadata -->
+            <div class="bg-light rounded-3 p-3 mb-4">
+              <p class="fw-semibold mb-2"><i class="bi bi-info-circle me-2 text-dark"></i>Proposal Information</p>
+              <ul class="small mb-0 text-muted">
+                <li>All proposals will appear on the DAO dashboard after submission.</li>
+                <li>Voting will be open to token holders for 48 hours.</li>
+              </ul>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'dao' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-2"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-dark rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-send-fill me-2"></i>Submit Proposal
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+  .form-control:focus, textarea:focus {
+    border-color: #111;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.15);
+    transition: 0.2s ease;
+  }
+
+  .card {
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+
+{% endblock %}

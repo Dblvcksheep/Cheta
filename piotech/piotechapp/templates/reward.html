@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Rewards{% endblock %}
+
+{% block content %}
+<div class="container my-4 min-vh-100">
+
+    <h4 class="mb-3">👋 Hey, {{ user.username }}</h4>
+    <p class="text-muted">Here’s a summary of your rewards</p>
+
+    {% if user.wallet.wallet %}
+        <div class="border">
+            <strong>Reward Wallet:</strong>
+            <span class="text-monospace">{{ user.wallet.wallet }}</span>
+        </div>
+
+        {% if course %}
+            {% for c in course %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+
+                        <h5 class="card-title">
+                            {{ forloop.counter }}. {{ c.title }}
+                        </h5>
+
+                        <div class="row text-muted small mb-2">
+                            <div class="col">
+                                <strong>Total Revenue:</strong> ${{ c.revenue }}
+                            </div>
+                            <div class="col">
+                                <strong>Relevance Score:</strong> {{ c.score }}
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        {% if c.reward.exists %}
+                            <ul class="list-group list-group-flush">
+                                {% for reward in c.reward.all %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>This Month:</strong> ${{ reward.reward_doll }}<br>
+                                            <span class="badge {% if reward.sent %}bg-success{% else %}bg-warning{% endif %}">
+                                                {{ reward.sent|yesno:"Sent,Pending" }}
+                                            </span>
+                                            <p class="text-muted"><strong>Date:</strong>{{ reward.reward_at }}</p>
+                                        </div>
+
+                                        {% if reward.tx_hash %}
+                                            <button
+                                                class="btn btn-sm btn-outline-secondary copy-btn"
+                                                data-tx="{{ reward.tx_hash }}"
+                                                title="Copy transaction hash"
+                                            >
+                                                <i class="bi bi-copy"></i>
+                                            </button>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">No rewards yet.</p>
+                        {% endif %}
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-warning">
+                You haven’t created any courses yet.
+                <a href="{% url 'add_course' %}" class="btn btn-sm btn-dark ms-2">
+                    Create Course
+                </a>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="alert alert-danger">
+            You don’t have a wallet yet.
+            <a href="{% url 'generate' %}" class="btn btn-sm btn-dark ms-2">
+                Generate Wallet
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Copy TX Script -->
+<script>
+document.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".copy-btn");
+    if (!btn) return;
+
+    const tx = btn.dataset.tx;
+    await navigator.clipboard.writeText(tx);
+
+    btn.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="bi bi-copy"></i>';
+    }, 1200);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,3 @@
+Terminal 1 → celery -A piotech worker -l info
+
+Terminal 2 → celery -A piotech beat -l info

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}DAO Governance{% endblock %}
+
+{% block content %}
+<div class="container py-5 min-vh-100">
+
+  <!-- Header Section -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-5 border-bottom pb-3 gap-3">
+    <div>
+      <h1 class="display-6 fw-bold text-dark mb-1">DAO Governance</h1>
+      <p class="text-muted mb-0">Vote, create, and shape the future of our platform through decentralized proposals.</p>
+    </div>
+    <a href="{% url 'add_proposal' %}" class="btn btn-dark px-4 py-2 rounded-pill shadow-sm fw-semibold">
+      <i class="bi bi-plus-circle me-2"></i> New Proposal
+    </a>
+  </div>
+
+  <!-- Active Proposals Section -->
+  <div class="card border-0 shadow-sm rounded-4 mb-5">
+    <div class="card-body p-4">
+      <h4 class="fw-semibold mb-4 text-dark d-flex align-items-center">
+        <i class="bi bi-lightbulb me-2 text-warning fs-4"></i> Active Proposals
+      </h4>
+
+      {% if proposals %}
+        <!-- Desktop Table -->
+        <div class="table-responsive d-none d-md-block">
+          <table class="table align-middle table-hover">
+            <thead class="table-dark text-white">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Title</th>
+                <th scope="col">Identifier</th>
+                <th scope="col">Votes</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for proposal in proposals %}
+                <tr>
+                  <td class="fw-semibold text-secondary">{{ forloop.counter }}</td>
+                  <td class="fw-bold">{{ proposal.title }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border px-2 py-1">
+                      {{ proposal.identifier }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-success fw-semibold me-2">
+                      <i class="bi bi-arrow-up-circle-fill me-1"></i>{{ proposal.up_votes }}
+                    </span>
+                    <span class="text-danger fw-semibold">
+                      <i class="bi bi-arrow-down-circle-fill me-1"></i>{{ proposal.down_votes }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if proposal.up_votes > proposal.down_votes %}
+                      <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Leading</span>
+                    {% elif proposal.up_votes == proposal.down_votes %}
+                      <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">Tied</span>
+                    {% else %}
+                      <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">Falling</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <a href="{% url 'proposal_detail' proposal.id %}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+                      <i class="bi bi-eye me-1"></i> View
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none">
+          {% for proposal in proposals %}
+            <div class="proposal-card">
+              <h5 class="fw-bold text-dark mb-1">{{ proposal.title }}</h5>
+              <p class="small text-muted mb-2">{{ proposal.identifier }}</p>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <span class="text-success fw-semibold me-3">
+                    <i class="bi bi-arrow-up-circle-fill me-1"></i>{{ proposal.up_votes }}
+                  </span>
+                  <span class="text-danger fw-semibold">
+                    <i class="bi bi-arrow-down-circle-fill me-1"></i>{{ proposal.down_votes }}
+                  </span>
+                </div>
+                {% if proposal.up_votes > proposal.down_votes %}
+                  <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Leading</span>
+                {% elif proposal.up_votes == proposal.down_votes %}
+                  <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">Tied</span>
+                {% else %}
+                  <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">Falling</span>
+                {% endif %}
+              </div>
+              <a href="{% url 'proposal_detail' proposal.id %}" class="btn btn-sm btn-dark w-100 rounded-pill">
+                <i class="bi bi-eye me-1"></i> View Proposal
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5">
+          <i class="bi bi-inbox text-muted fs-1 mb-3 d-block"></i>
+          <h5 class="text-muted">No proposals yet</h5>
+          <p class="text-secondary">Be the first to create one and help shape the platform’s direction.</p>
+          <a href="{% url 'add_proposal' %}" class="btn btn-dark mt-2 px-4 rounded-pill">
+            <i class="bi bi-plus-lg me-2"></i>Create Proposal
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Styling -->
+<style>
+  .table thead th {
+    background-color: #111;
+    color: #fff;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-outline-dark:hover {
+    background-color: #111;
+    color: #fff;
+  }
+
+  /* Mobile card style */
+  .proposal-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 1rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+  }
+
+  .proposal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  @media (max-width: 576px) {
+    .proposal-card h5 {
+      font-size: 1rem;
+    }
+    .proposal-card {
+      padding: 1rem;
+    }
+  }
+</style>
+{% endblock %}

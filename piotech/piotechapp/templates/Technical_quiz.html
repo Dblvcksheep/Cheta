@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Quiz | {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <h2 class="mb-4 text-center">
+        Technical Quiz for <strong>{{ course.title }}</strong>
+    </h2>
+
+    <form method="post" class="shadow p-4 rounded bg-white">
+        {% csrf_token %}
+
+        {% for quiz in quiz_list %}
+        <div class="mb-4 p-3 border rounded">
+            <p class="fw-bold">{{ forloop.counter }}. {{ quiz.question }}</p>
+
+            <div class="mt-2">
+                <label class="d-block mb-1">
+                    <input type="radio" name="answer_{{ forloop.counter }}" value="A" required>
+                    {{ quiz.optionA }}
+                </label>
+
+                <label class="d-block mb-1">
+                    <input type="radio" name="answer_{{ forloop.counter }}" value="B">
+                    {{ quiz.optionB }}
+                </label>
+
+                <label class="d-block mb-1">
+                    <input type="radio" name="answer_{{ forloop.counter }}" value="C">
+                    {{ quiz.optionC }}
+                </label>
+
+                <label class="d-block mb-1">
+                    <input type="radio" name="answer_{{ forloop.counter }}" value="D">
+                    {{ quiz.optionD }}
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-dark btn-lg w-100 mt-3">
+            Submit Answers
+        </button>
+    </form>
+</div>
+
+{% if score %}
+<!-- Result Modal -->
+<div class="modal fade show" style="display:block; background:#00000090;">
+    <div class="modal-dialog">
+        <div class="modal-content p-4 text-center">
+
+            <h3>Quiz Completed!</h3>
+            <p class="mt-2">Your Score: <strong>{{ score }}%</strong></p>
+
+            {% if passed %}
+                <p class="text-success fw-bold">You passed!</p>
+
+                <a href="{% url 'complete_course' course.id %}"
+                   class="btn btn-success w-100 mt-3">
+                    Mint Certificate
+                </a>
+            {% else %}
+                <p class="text-danger fw-bold">You did not pass 60%.</p>
+            {% endif %}
+
+            <a href="{% url 'retake_quiz' course.id %}"
+               class="btn btn-secondary w-100 mt-2">
+                Retake Quiz
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block Ai %}{% endblock %}

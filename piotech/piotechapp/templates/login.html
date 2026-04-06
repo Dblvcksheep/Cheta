@@ -1,0 +1,79 @@
+{% extends 'base.html' %} 
+{% load socialaccount %} 
+{% block title%}Sign_in{%endblock title %} 
+{% block content %}
+<div
+  class="d-flex align-items-center justify-content-center min-vh-100 bg-body-tertiary"
+>
+  <main
+    class="form-signin bg-white p-5 rounded-3 shadow-sm"
+    style="max-width: 700px"
+  >
+    <form method="post">
+      {% csrf_token %}
+      <h1 class="h5 mb-3 fw-normal text-center">Sign In</h1>
+      <div class="form-floating mb-3">
+        <input
+          name = "identifier"
+          class="form-control form-control"
+          id="floatingInput"
+          placeholder="provide a username or email"
+          required
+        />
+        <label for="floatingInput">Email or Username</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input
+          type="password"
+          name = "password"
+          class="form-control form-control"
+          id="floatingPassword"
+          placeholder="Password"
+          required
+        />
+        <label for="floatingPassword">Password</label>
+      </div>
+      <div class="form-check text-start mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="remember_me"
+          id="flexCheckDefault"
+        />
+        <label 
+        class="form-check-label" 
+        for="flexCheckDefault"
+        >
+          Remember me
+        </label>
+      </div>
+      <button class="btn btn-dark btn-sm w-100 py-2" type="submit">
+        Sign In
+      </button>
+      <p class="mt-3 text-center">
+        <a href="{% url 'forget_password' %}" class="text-dark text-decoration-none">forget password</a>
+      </p>
+      
+
+      <!-- I changed this to an href tag below
+      <button class="btn btn-light btn-sm w-100 py-2">
+        <i class="bi bi-google"></i> Sign In with Google
+      </button> -->
+      <!-- I changed the button tag to hrefchanged below -->
+
+      <!-- i added and OR divider -->
+      <div class="d-flex align-items-center my-3">
+              <hr class="flex-grow-1">
+              <span class="mx-2 text-muted">OR</span>
+              <hr class="flex-grow-1">
+      </div>
+
+      <!-- This is the Google sign in button -->
+      <a href="{% provider_login_url 'google' %}" class="btn btn-light btn-sm w-100 py-2"><i class="bi bi-google"></i> Sign in with Google</a>
+      <p class="mt-3">
+        Don't have an account? <a href="{% url 'register' %}">Sign up</a>
+      </p>
+    </form>
+  </main>
+</div>
+{% endblock %}

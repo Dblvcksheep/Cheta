@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4 min-vh-100" style="max-width:420px;">
+
+  <div class="card shadow-sm border-0 rounded-4 mb-3">
+    <div class="card-body text-center">
+      <h6 class="text-muted mb-1">Wallet</h6>
+      <div class="small text-secondary text-truncate" id="walletAddress">{{ acct }}</div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mb-4">
+    <div class="text-center">
+      <button class="btn btn-dark rounded-circle p-3" onclick="openSendModal()">
+        <i class="bi bi-send"></i>
+      </button>
+      <div class="small mt-1">Send</div>
+    </div>
+
+    <div class="text-center">
+      <button class="btn btn-dark rounded-circle p-3" id="receiveBtn">
+        <i class="bi bi-download"></i>
+      </button>
+      <div class="small mt-1">Receive</div>
+    </div>
+
+    <div class="text-center">
+      <button class="btn btn-dark rounded-circle p-3" onclick="openExportModal()">
+        <i class="bi bi-box-arrow-up"></i>
+      </button>
+      <div class="small mt-1">Export</div>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills nav-fill mb-3">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tokens">Tokens</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#nfts">NFTs</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#txs">Transactions</button></li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="tokens">
+      <div class="list-group list-group-flush">
+        <div class="list-group-item d-flex justify-content-between">
+          <div>
+            <div class="fw-semibold">USDC</div>
+            <div class="small text-muted" id="usdcBalance">{{ usdc_balance }} USDC</div>
+          </div>
+          <div class="fw-semibold" id="usdcUSD">${{ usdc_balance }}</div>
+        </div>
+
+        <div class="list-group-item d-flex justify-content-between">
+          <div>
+            <div class="fw-semibold">ETH (Base)</div>
+            <div class="small text-muted" id="ethBalance">{{ eth_balance|default:"0.0000" }} ETH</div>
+          </div>
+          <div class="fw-semibold" id="ethUSD">$0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="nfts">
+      <div class="text-center text-muted py-4">No NFTs</div>
+    </div>
+
+    <div class="tab-pane fade" id="txs">
+      <div class="text-center text-muted py-4">No transactions yet</div>
+    </div>
+  </div>
+</div>
+
+<!-- SEND MODAL -->
+<div class="modal fade" id="sendModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+
+      <div class="modal-body" id="sendStep1">
+        <h5 class="mb-3">Send Asset</h5>
+
+        <div class="mb-3">
+          <label class="form-label">Asset</label>
+          <select class="form-select" id="sendAsset">
+            <option value="USDC">USDC</option>
+            <option value="ETH">ETH (Base)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Recipient Address</label>
+          <input class="form-control" id="sendTo" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Amount</label>
+          <input class="form-control" id="sendAmount" type="number" step="0.0001" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input class="form-control" id="sendPassword" type="password" />
+        </div>
+
+        <div id="sendAlert"></div>
+
+        <button class="btn btn-dark w-100" onclick="initSend()">Continue</button>
+      </div>
+
+      <div class="modal-body d-none" id="sendStepOtp">
+        <h5 class="mb-3">Confirm Transaction</h5>
+        <input class="form-control mb-3" id="sendOtp" placeholder="OTP" />
+        <div id="otpAlert"></div>
+        <button class="btn btn-dark w-100" onclick="confirmSend()">Confirm</button>
+      </div>
+
+      <div class="modal-body d-none text-center" id="sendStepSuccess">
+        <i class="bi bi-check-circle text-success fs-1"></i>
+        <h5 class="mt-2">Transaction Sent</h5>
+        <p class="small text-muted text-break font-monospace" id="txHash"></p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+
+      <!-- STEP 1 -->
+      <div class="modal-body" id="exportStep1">
+        <h5 class="mb-3">Export Wallet</h5>
+
+        <input class="form-control mb-3" id="exportPassword" type="password" placeholder="Password">
+
+        <div id="exportAlert"></div>
+
+        <button class="btn btn-dark w-100" onclick="sendExportOtp()">Send OTP</button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="modal-body d-none" id="exportStep2">
+        <h5 class="mb-3">Confirm OTP</h5>
+
+        <input class="form-control mb-3" id="exportOtp" placeholder="OTP">
+
+        <div id="otp"></div>
+
+        <button class="btn btn-dark w-100" onclick="confirmExport()">Confirm</button>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="modal-body d-none text-center" id="exportStep3">
+        <h5 class="mb-2">Private Key</h5>
+
+        <div class="input-group">
+          <input class="form-control" id="privateKeyField" readonly>
+          <button class="btn btn-outline-secondary" onclick="copyPrivateKey()">
+            <i class="bi bi-clipboard"></i>
+          </button>
+        </div>
+
+        <div class="small text-muted mt-2">Keep this safe.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+function showAlert(el, msg, type="danger") {
+  el.innerHTML = `<div class="alert alert-${type} alert-sm mt-2">${msg}</div>`;
+}
+
+let sendSessionId = null;
+
+function openSendModal() {
+  new bootstrap.Modal(document.getElementById("sendModal")).show();
+}
+
+async function initSend() {
+  const alertBox = document.getElementById("sendAlert");
+  alertBox.innerHTML = "";
+
+  const payload = {
+    asset: sendAsset.value,
+    to: sendTo.value,
+    amount: sendAmount.value,
+    password: sendPassword.value
+  };
+
+  try {
+    const res = await fetch("/wallet/send/init/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    sendSessionId = data.session_id;
+    sendStep1.classList.add("d-none");
+    sendStepOtp.classList.remove("d-none");
+  } catch (e) {
+    showAlert(alertBox, e.message);
+  }
+}
+
+async function confirmSend() {
+  const alertBox = document.getElementById("otpAlert");
+  alertBox.innerHTML = "";
+
+  try {
+    const res = await fetch("/wallet/send/confirm/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+      body: JSON.stringify({ session_id: sendSessionId, otp: sendOtp.value })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    sendStepOtp.classList.add("d-none");
+    sendStepSuccess.classList.remove("d-none");
+    txHash.textContent = data.tx_hash;
+  } catch (e) {
+    showAlert(alertBox, e.message);
+  }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
+<script>
+/* ---------- RECEIVE (COPY + INDICATOR) ---------- */
+const receiveBtn = document.getElementById("receiveBtn");
+
+receiveBtn.addEventListener("click", async () => {
+  const address = document.getElementById("walletAddress").innerText.trim();
+  await navigator.clipboard.writeText(address);
+
+  // visual feedback
+  const originalHTML = receiveBtn.innerHTML;
+  receiveBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+  receiveBtn.classList.remove("btn-dark");
+  receiveBtn.classList.add("btn-success");
+
+  setTimeout(() => {
+    receiveBtn.innerHTML = originalHTML;
+    receiveBtn.classList.remove("btn-success");
+    receiveBtn.classList.add("btn-dark");
+  }, 1200);
+});
+
+/* ---------- ETH USD VALUE FROM EXISTING BALANCE ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const ethBalanceEl = document.getElementById("ethBalance");
+  const ethUSDEl = document.getElementById("ethUSD");
+
+  async function fetchEthPrice() {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch ETH price");
+
+    const data = await res.json();
+    return data.ethereum.usd;
+  }
+
+  function getEthBalanceFromDOM() {
+    // Extract number from "0.1234 ETH"
+    const text = ethBalanceEl.innerText.trim();
+    const match = text.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 0;
+  }
+
+  async function updateEthUSD() {
+    try {
+      const ethBalance = getEthBalanceFromDOM();
+      const ethPrice = await fetchEthPrice();
+
+      const usdValue = ethBalance * ethPrice;
+      ethUSDEl.innerText = `$${usdValue.toFixed(2)}`;
+    } catch (err) {
+      ethUSDEl.innerText = "—";
+      console.error("ETH USD calc error:", err);
+    }
+  }
+
+  updateEthUSD();
+  setInterval(updateEthUSD, 60000);
+});
+</script>
+
+<script>
+let exportSessionId = null;
+
+function openExportModal() {
+  new bootstrap.Modal(document.getElementById("exportModal")).show();
+}
+
+function showAlert(el, msg, type="danger") {
+  el.innerHTML = `<div class="alert alert-${type} alert-sm mt-2">${msg}</div>`;
+}
+
+async function sendExportOtp() {
+  const alertBox = document.getElementById("exportAlert");
+  alertBox.innerHTML = "";
+
+  try {
+    const res = await fetch("/wallet/export/init/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({
+        password: exportPassword.value
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    exportSessionId = data.session_id;
+    exportStep1.classList.add("d-none");
+    exportStep2.classList.remove("d-none");
+
+  } catch (e) {
+    showAlert(alertBox, e.message);
+  }
+}
+
+async function confirmExport() {
+  const alertBox = document.getElementById("otp");
+  alertBox.innerHTML = "";
+
+  try {
+    const res = await fetch("/wallet/export/confirm/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({
+        session_id: exportSessionId,
+        otp: exportOtp.value
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    exportStep2.classList.add("d-none");
+    exportStep3.classList.remove("d-none");
+
+    privateKeyField.value = data.private_key;
+
+  } catch (e) {
+    showAlert(alertBox, e.message);
+  }
+}
+
+function copyPrivateKey() {
+  navigator.clipboard.writeText(privateKeyField.value);
+}
+</script>
+
+
+
+{% endblock %}
